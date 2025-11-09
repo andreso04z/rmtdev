@@ -1,7 +1,17 @@
+import JobList from "./JobList";
+import PaginationControls from "./PaginationControls";
+import ResultsCount from "./ResultsCount";
+import Sorting from "./SortingControls";
+
 export default function Sidebar() {
   return (
     <div className="sidebar">
-      <div className="sidebar__top"></div>
+      <div className="sidebar__top">
+        <ResultsCount />
+        <Sorting />
+      </div>
+      <JobList />
+      <PaginationControls />
     </div>
   );
 }
