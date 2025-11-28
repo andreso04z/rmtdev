@@ -1,7 +1,18 @@
+import { useActiveId, useJobItem } from "../lib/hooks";
 import BookmarkIcon from "./BookmarkIcon";
+import Spinner from "./Spinner";
 
 export default function JobItemContent() {
-  return <EmptyJobContent />;
+  const activeId = useActiveId();
+  const { jobItem, isLoading } = useJobItem(activeId);
+
+  if (isLoading) {
+    return <LoadingJobContent />;
+  }
+
+  if (!jobItem) {
+    return <EmptyJobContent />;
+  }
 
   return (
     <section className="job-details">
@@ -11,43 +22,36 @@ export default function JobItemContent() {
           alt="#"
         />
 
-        <a
-          className="apply-btn"
-          href="https://fictional9thtechwebsite.com/"
-          target="_blank"
-        >
+        <a className="apply-btn" href={jobItem.companyURL} target="_blank">
           Apply
         </a>
 
         <section className="job-info">
           <div className="job-info__left">
-            <div className="job-info__badge">9T</div>
+            <div className="job-info__badge">{jobItem.badgeLetters}</div>
             <div className="job-info__below-badge">
-              <time className="job-info__time">2d</time>
+              <time className="job-info__time">{jobItem.daysAgo}</time>
 
               <BookmarkIcon />
             </div>
           </div>
 
           <div className="job-info__right">
-            <h2 className="second-heading">Front End React Engineer</h2>
-            <p className="job-info__company">9th Tech</p>
-            <p className="job-info__description">
-              Join us as we pursue our disruptive new vision to make machine
-              data accessible, usable, and valuable to everyone.
-            </p>
+            <h2 className="second-heading">{jobItem.title}</h2>
+            <p className="job-info__company">{jobItem.company}</p>
+            <p className="job-info__description">{jobItem.description}</p>
             <div className="job-info__extras">
               <p className="job-info__extra">
                 <i className="fa-solid fa-clock job-info__extra-icon"></i>
-                Full-Time
+                {jobItem.duration}
               </p>
               <p className="job-info__extra">
                 <i className="fa-solid fa-money-bill job-info__extra-icon"></i>
-                $105,000+
+                {jobItem.salary}
               </p>
               <p className="job-info__extra">
                 <i className="fa-solid fa-location-dot job-info__extra-icon"></i>{" "}
-                Global
+                {jobItem.duration}
               </p>
             </div>
           </div>
@@ -56,15 +60,17 @@ export default function JobItemContent() {
         <div className="job-details__other">
           <section className="qualifications">
             <div className="qualifications__left">
-              <h4 className="fourth-heading">Qualifications</h4>
+              <h4 className="fourth-heading">{jobItem.qualifications}</h4>
               <p className="qualifications__sub-text">
                 Other qualifications may apply
               </p>
             </div>
             <ul className="qualifications__list">
-              <li className="qualifications__item">React</li>
-              <li className="qualifications__item">Next.js</li>
-              <li className="qualifications__item">Tailwind CSS</li>
+              {jobItem.qualifications.map((qualification, index) => (
+                <li key={index} className="qualifications__item">
+                  {qualification}
+                </li>
+              ))}
             </ul>
           </section>
 
@@ -76,8 +82,11 @@ export default function JobItemContent() {
               </p>
             </div>
             <ul className="reviews__list">
-              <li className="reviews__item">Nice building and food also.</li>
-              <li className="reviews__item">Great working experience.</li>
+              {jobItem.reviews.map((review, index) => (
+                <li key={index} className="reviews__item">
+                  {review}
+                </li>
+              ))}
             </ul>
           </section>
         </div>
@@ -89,6 +98,16 @@ export default function JobItemContent() {
             it!
           </p>
         </footer>
+      </div>
+    </section>
+  );
+}
+
+function LoadingJobContent() {
+  return (
+    <section className="job-details">
+      <div>
+        <Spinner />
       </div>
     </section>
   );
