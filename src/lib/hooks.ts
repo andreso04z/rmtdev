@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import { JobItem, JobItemExpanded } from "./types";
-import { BASE_API_URL } from "./constants";
 import { useQuery } from "@tanstack/react-query";
+import { handleError, fetchJobItem, fetchJobItems } from "./utils";
 
 export function useActiveId() {
     const [activeId, setActiveId] = useState<number | null>(null);
@@ -23,23 +22,6 @@ export function useActiveId() {
     return activeId;
 }
 
-type JobItemApiResponse = {
-  public: boolean;
-  jobItem: JobItemExpanded;
-};
-
-const fetchJobItem = async (id: number): Promise<JobItemApiResponse>  => {
-  const response = await fetch(`${BASE_API_URL}/${id}`);
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.description);
-  }
-
-  const data = await response.json();
-  return data;
-};
-
 export function useJobItem(id: number | null) {
   const { data, isInitialLoading } = useQuery(
     ["job-item", id],
@@ -49,31 +31,11 @@ export function useJobItem(id: number | null) {
       refetchOnWindowFocus: false,
       retry: false,
       enabled: !!id,
-      onError: (error) => {
-        console.log(error);
-      },
+      onError: handleError,
     }
   );
 
   return { jobItem: data?.jobItem, isLoading: isInitialLoading } as const;
-}
-
-type JobItemsApiResponse = {
-  public: boolean;
-  sorted: boolean;
-  jobItems: JobItem[];
-}
-
-const fetchJobItems = async (searchText: string): Promise<JobItemsApiResponse> => {
-  const response = await fetch(`${BASE_API_URL}?search=${searchText}`);
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.description);
-  }
-
-  const data = await response.json();
-  return data;
 }
 
 export function useJobItems(searchText: string) {
@@ -85,9 +47,7 @@ export function useJobItems(searchText: string) {
       refetchOnWindowFocus: false,
       retry: false,
       enabled: !!searchText,
-      onError: (error) => {
-        console.log(error);
-      },
+      onError: handleError,
     }
   );
 
