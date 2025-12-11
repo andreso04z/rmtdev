@@ -23,74 +23,75 @@ export function useActiveId() {
     return activeId;
 }
 
-/*
-export function useJobItem(activeId: number | null) {
-    const [jobItem, setJobItem] = useState<JobItemExpanded | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
-  
-    useEffect(() => {
-      if (!activeId) return;
-  
-      const fetchData = async () => {
-        setIsLoading(true);
-        const response = await fetch(`${BASE_API_URL}/${activeId}`);
-        const data = await response.json();
-        setIsLoading(false);
-        setJobItem(data.jobItem);
-      };
-  
-      fetchData();
-    }, [activeId]);
+type JobItemApiResponse = {
+  public: boolean;
+  jobItem: JobItemExpanded;
+};
 
-    return {jobItem, isLoading} as const;
-}
-*/
+const fetchJobItem = async (id: number): Promise<JobItemApiResponse>  => {
+  const response = await fetch(`${BASE_API_URL}/${id}`);
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.description);
+  }
+
+  const data = await response.json();
+  return data;
+};
 
 export function useJobItem(id: number | null) {
-  const { data, isLoading } = useQuery(
+  const { data, isInitialLoading } = useQuery(
     ["job-item", id],
-    async () => {
-      const response = await fetch(`${BASE_API_URL}/${id}`);
-      const data = await response.json();
-      return data;
-    }, 
+    () => id ? fetchJobItem(id) : null, 
     {
       staleTime: 1000 * 60 * 60,
       refetchOnWindowFocus: false,
       retry: false,
       enabled: !!id,
-      onError: () => {},
+      onError: (error) => {
+        console.log(error);
+      },
     }
   );
 
-  const jobItem: JobItemExpanded = data?.jobItem;
-  return { jobItem, isLoading } as const;
+  return { jobItem: data?.jobItem, isLoading: isInitialLoading } as const;
+}
+
+type JobItemsApiResponse = {
+  public: boolean;
+  sorted: boolean;
+  jobItems: JobItem[];
+}
+
+const fetchJobItems = async (searchText: string): Promise<JobItemsApiResponse> => {
+  const response = await fetch(`${BASE_API_URL}?search=${searchText}`);
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.description);
+  }
+
+  const data = await response.json();
+  return data;
 }
 
 export function useJobItems(searchText: string) {
-      const [jobItems, setJobItems] = useState<JobItem[]>([]);
-      const [isLoading, setIsLoading] = useState(false);
+  const { data, isInitialLoading } = useQuery(
+    ["job-items", searchText],
+    () => searchText ? fetchJobItems(searchText) : null,
+    {
+      staleTime: 1000 * 60 * 60,
+      refetchOnWindowFocus: false,
+      retry: false,
+      enabled: !!searchText,
+      onError: (error) => {
+        console.log(error);
+      },
+    }
+  );
 
-      const jobItemsSliced = jobItems.slice(0, 7);
-      const totalNumberOfResults = jobItems.length;
-    
-      useEffect(() => {
-        if (!searchText) return;
-    
-        const fetchData = async () => {
-          setIsLoading(true);
-          const response = await fetch(
-            `${BASE_API_URL}?search=${searchText}`
-          );
-          const data = await response.json();
-          setIsLoading(false);
-          setJobItems(data.jobItems);
-        };
-    
-        fetchData();
-      }, [searchText]);
-
-      return {jobItemsSliced, isLoading, totalNumberOfResults} as const;
+  return {jobItems: data?.jobItems, isLoading: isInitialLoading} as const;
 }
 
 export function useDebounce<T>(value: T, delay = 500): T {
