@@ -28,3 +28,7 @@ export type JobItemsApiResponse = {
   sorted: boolean;
   jobItems: JobItem[];
 }
+
+export type SortBy = "relevant" | "recent";
+
+export type Direction = "next" | "previous";
