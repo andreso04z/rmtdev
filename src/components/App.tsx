@@ -11,7 +11,7 @@ import Sidebar, { SidebarTop } from "./Sidebar";
 import JobList from "./JobList";
 import PaginationControls from "./PaginationControls";
 import ResultsCount from "./ResultsCount";
-import { useDebounce, useJobItems } from "../lib/hooks";
+import { useDebounce, useSearchQuery } from "../lib/hooks";
 import { Toaster } from "react-hot-toast";
 import { RESULTS_PER_PAGE } from "../lib/constants";
 import SortingControls from "./SortingControls";
@@ -20,7 +20,7 @@ import { Direction, SortBy } from "../lib/types";
 function App() {
   const [searchText, setSearchText] = useState("");
   const debouncedSearchText = useDebounce<string>(searchText, 375);
-  const { jobItems, isLoading } = useJobItems(debouncedSearchText);
+  const { jobItems, isLoading } = useSearchQuery(debouncedSearchText);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState<SortBy>("relevant");
 
